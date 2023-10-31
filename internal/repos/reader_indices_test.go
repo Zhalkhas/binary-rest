@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"slices"
 	"strings"
 	"testing"
@@ -151,6 +152,11 @@ func TestReaderIndices_Search(t *testing.T) {
 			inputSearchVal: 1450,
 			expected:       4,
 			expectedErr:    nil,
+		}, "should return closest index to found value  (arr length odd) when closest is last 2": {
+			inputArr:       strings.NewReader("1000\n1200\n1400"),
+			inputSearchVal: 1350,
+			expected:       2,
+			expectedErr:    nil,
 		},
 		"should return error if value is not close enough": {
 			inputArr:       strings.NewReader("1000\n1500\n2000"),
@@ -201,4 +207,37 @@ func generateSortedInts(length int) string {
 		inputStrs[i] = fmt.Sprint(input[i])
 	}
 	return strings.Join(inputStrs, "\n")
+}
+
+func generateRandomSortedInts(length int) string {
+	input := make([]int, length)
+	for i := range input {
+		input[i] = rand.Int()
+	}
+	slices.Sort(input)
+	inputStrs := make([]string, length)
+	for i := range input {
+		inputStrs[i] = fmt.Sprint(input[i])
+	}
+	return strings.Join(inputStrs, "\n")
+}
+
+func BenchmarkReaderIndices_Search(b *testing.B) {
+	var inputSize = []int{128, 256, 65536, 65536 * 2, 65536 * 4}
+	for _, size := range inputSize {
+		for i := 0; i < b.N; i++ {
+			b.Run("input size "+fmt.Sprint(size), func(b *testing.B) {
+				b.StopTimer()
+				reader, err := NewReaderIndices(strings.NewReader(generateRandomSortedInts(size)))
+				if err != nil {
+					b.Errorf("unexpected error creating reader: %v", err)
+				}
+				b.StartTimer()
+				_, err = reader.Search(context.Background(), reader.values[rand.Intn(len(reader.values))])
+				if err != nil && !errors.Is(err, ErrIndexNotFound) {
+					b.Errorf("unexpected error %v", err)
+				}
+			})
+		}
+	}
 }
