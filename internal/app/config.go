@@ -28,16 +28,19 @@ var defaultConfig = Config{
 // merging it with defaultConfig
 func NewConfig() (Config, error) {
 	k := koanf.New("\n")
+	// try to load default config struct
 	err := k.Load(structs.Provider(defaultConfig, "koanf"), nil)
 	if err != nil {
 		slog.Error("error while parsing default config struct", "err", err, "config", defaultConfig)
 		return Config{}, err
 	}
+	// try to load .env file
 	err = k.Load(file.Provider(".env"), dotenv.Parser())
 	if err != nil {
 		slog.Error("error while parsing .env file", "err", err)
 		return Config{}, err
 	}
+	// unmarshal merged loaded configs into Config struct
 	var config Config
 	err = k.Unmarshal("", &config)
 	if err != nil {

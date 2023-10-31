@@ -9,12 +9,16 @@ import (
 	"os"
 )
 
+// App is core of the application,
+// which is responsible for collecting, orchestrating and launching
+// all the components of the application.
 type App struct {
 	config            Config
 	indicesController httpapi.IndicesController
 }
 
 func New(config Config) (App, error) {
+	// initialize repositories
 	f, err := os.Open(config.InputFileName)
 	if err != nil {
 		slog.Error("error while opening indices input file", "err", err, "file_name", config.InputFileName)
@@ -28,11 +32,14 @@ func New(config Config) (App, error) {
 		slog.Error("error while creating indices repository", "err", err)
 		return App{}, err
 	}
+
+	// initialize controllers
 	indicesController := httpapi.NewIndicesController(
 		indicesRepo,
 		middleware.RequestLogger(httpapi.SlogFormatter{}),
 		middleware.Recoverer,
 	)
+
 	return App{
 		config:            config,
 		indicesController: indicesController,

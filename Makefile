@@ -1,5 +1,6 @@
+BUILD_OUTPUT ?= ./build/app
 build:
-	go build -o ./build/app
+	go build -o $(BUILD_OUTPUT) cmd/app/main.go
 run:
 	go run cmd/app/main.go
 test:

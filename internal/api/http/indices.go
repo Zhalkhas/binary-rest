@@ -13,6 +13,7 @@ import (
 
 const endpointValuePathParam = "value"
 
+// IndicesController is responsible for handling requests to /endpoint
 type IndicesController struct {
 	handler  http.Handler
 	indxRepo repos.Indices
@@ -26,7 +27,10 @@ func NewIndicesController(indices repos.Indices, middlewares ...func(http.Handle
 	return ir
 }
 
+// getIndexHandler is responsible for handling requests
+// to /endpoint/{value} and returning index of given value
 func (i IndicesController) getIndexHandler(rw http.ResponseWriter, r *http.Request) {
+	// parse and validate value which we need to find index of
 	value, err := strconv.ParseInt(chi.URLParam(r, endpointValuePathParam), 10, 64)
 	if err != nil {
 		if err2 := render.Render(rw, r, ErrInvalidValue); err2 != nil {
@@ -47,6 +51,7 @@ func (i IndicesController) getIndexHandler(rw http.ResponseWriter, r *http.Reque
 		slog.Error("invalid negative value passed", "value", value)
 		return
 	}
+	// search for index
 	index, err := i.indxRepo.Search(r.Context(), value)
 	if err == nil {
 		if err2 := render.Render(rw, r, IndexFoundResponse{Index: index, Value: value}); err2 != nil {
