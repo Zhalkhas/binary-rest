@@ -3,6 +3,7 @@ package repos
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"slices"
 	"strings"
@@ -174,4 +175,30 @@ func TestReaderIndices_Search(t *testing.T) {
 			}
 		})
 	}
+	t.Run("canceling context must return error", func(t *testing.T) {
+		reader, err := NewReaderIndices(strings.NewReader(generateSortedInts(1000000)))
+		if err != nil {
+			t.Errorf("unexpected error creating reader: %v", err)
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			_, err := reader.Search(ctx, 1)
+			if !errors.Is(err, context.Canceled) {
+				t.Errorf("expected error %v, got %v", context.Canceled, err)
+			}
+		}()
+		cancel()
+	})
+}
+
+func generateSortedInts(length int) string {
+	input := make([]int, length)
+	for i := range input {
+		input[i] = i
+	}
+	inputStrs := make([]string, length)
+	for i := range input {
+		inputStrs[i] = fmt.Sprint(input[i])
+	}
+	return strings.Join(inputStrs, "\n")
 }
