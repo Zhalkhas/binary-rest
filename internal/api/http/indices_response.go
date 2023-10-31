@@ -13,7 +13,7 @@ type ErrorResponse struct {
 	Message    string `json:"message"`
 }
 
-func (e ErrorResponse) Render(w http.ResponseWriter, r *http.Request) error {
+func (e ErrorResponse) Render(_ http.ResponseWriter, r *http.Request) error {
 	render.Status(r, e.statusCode)
 	return nil
 }
@@ -38,7 +38,7 @@ type IndexFoundResponse struct {
 	Value int64 `json:"value"`
 }
 
-func (i IndexFoundResponse) Render(w http.ResponseWriter, r *http.Request) error {
+func (i IndexFoundResponse) Render(_ http.ResponseWriter, r *http.Request) error {
 	render.Status(r, http.StatusOK)
 	return nil
 }

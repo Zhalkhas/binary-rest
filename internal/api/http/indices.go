@@ -29,8 +29,8 @@ func NewIndicesController(indices repos.Indices, middlewares ...func(http.Handle
 func (i IndicesController) getIndexHandler(rw http.ResponseWriter, r *http.Request) {
 	value, err := strconv.ParseInt(chi.URLParam(r, endpointValuePathParam), 10, 64)
 	if err != nil {
-		if err = render.Render(rw, r, ErrInvalidValue); err != nil {
-			slog.Error("error while rendering invalid value error", "err", err)
+		if err2 := render.Render(rw, r, ErrInvalidValue); err2 != nil {
+			slog.Error("error while rendering invalid value error", "err", err2)
 			return
 		}
 		slog.Error(
@@ -39,21 +39,29 @@ func (i IndicesController) getIndexHandler(rw http.ResponseWriter, r *http.Reque
 		)
 		return
 	}
+	if value < 0 {
+		if err2 := render.Render(rw, r, ErrInvalidValue); err2 != nil {
+			slog.Error("error while rendering invalid value error", "err", err2)
+			return
+		}
+		slog.Error("invalid negative value passed", "value", value)
+		return
+	}
 	index, err := i.indxRepo.Search(r.Context(), value)
 	if err == nil {
-		if err = render.Render(rw, r, IndexFoundResponse{Index: index, Value: value}); err != nil {
+		if err2 := render.Render(rw, r, IndexFoundResponse{Index: index, Value: value}); err2 != nil {
 			slog.Error(
 				"error while rendering index found response",
-				"err", err, "index", index, "value", value,
+				"err", err2, "index", index, "value", value,
 			)
 			return
 		}
 		return
 	} else if errors.Is(err, repos.ErrIndexNotFound) {
-		if err := render.Render(rw, r, ErrIndexNotFound); err != nil {
+		if err2 := render.Render(rw, r, ErrIndexNotFound); err2 != nil {
 			slog.Error(
 				"error while rendering index not found error",
-				"err", err, "value", value,
+				"err", err2, "value", value,
 			)
 			return
 		}
@@ -63,10 +71,10 @@ func (i IndicesController) getIndexHandler(rw http.ResponseWriter, r *http.Reque
 		)
 		return
 	} else {
-		if err = render.Render(rw, r, ErrUnknown); err != nil {
+		if err2 := render.Render(rw, r, ErrUnknown); err2 != nil {
 			slog.Error(
 				"error while rendering unknown error",
-				"err", err, "value", value,
+				"err", err2, "value", value,
 			)
 			return
 		}
