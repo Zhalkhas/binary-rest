@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// SlogFormatter is a [middleware.LogFormatter] that uses slog to log requests.
 type SlogFormatter struct{ slog.Logger }
 
 func (l SlogFormatter) NewLogEntry(r *http.Request) middleware.LogEntry {

@@ -11,8 +11,11 @@ import (
 )
 
 type Config struct {
-	Port          string `koanf:"PORT"`
-	LogLevel      string `koanf:"LOG_LEVEL"`
+	// Port is the port number to listen HTTP server on
+	Port string `koanf:"PORT"`
+	// LogLevel configures max log level
+	LogLevel string `koanf:"LOG_LEVEL"`
+	// InputFileName is the name of the file with indices
 	InputFileName string `koanf:"INPUT_FILE_NAME"`
 }
 

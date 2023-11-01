@@ -8,9 +8,10 @@ import (
 var _ render.Renderer = (*ErrorResponse)(nil)
 var _ render.Renderer = (*IndexFoundResponse)(nil)
 
+// ErrorResponse is a general response for errors
 type ErrorResponse struct {
 	statusCode int
-	Message    string `json:"message"`
+	Message    string `json:"message,omitempty"`
 }
 
 func (e ErrorResponse) Render(_ http.ResponseWriter, r *http.Request) error {
@@ -33,6 +34,7 @@ var ErrUnknown = ErrorResponse{
 	Message:    "unexpected error happened",
 }
 
+// IndexFoundResponse is a response for successful index search
 type IndexFoundResponse struct {
 	Index int   `json:"index"`
 	Value int64 `json:"value"`

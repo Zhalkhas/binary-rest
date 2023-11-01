@@ -13,8 +13,9 @@ import (
 // which is responsible for collecting, orchestrating and launching
 // all the components of the application.
 type App struct {
-	config            Config
-	indicesController httpapi.IndicesController
+	config Config
+	// rootHandler is HTTP handler that is responsible for handling all the requests.
+	rootHandler http.Handler
 }
 
 func New(config Config) (App, error) {
@@ -41,12 +42,15 @@ func New(config Config) (App, error) {
 	)
 
 	return App{
-		config:            config,
-		indicesController: indicesController,
+		config: config,
+		// since we have only one handler, we can use it as root handler,
+		// if we have more handlers, we can mount subrouters to the root handler
+		rootHandler: indicesController,
 	}, nil
 }
 
+// RunHTTP starts http server at port specified in [Config.Port] during initialization.
 func (a App) RunHTTP() error {
 	slog.Info("starting http server", "port", a.config.Port)
-	return http.ListenAndServe(":"+a.config.Port, a.indicesController)
+	return http.ListenAndServe(":"+a.config.Port, a.rootHandler)
 }
